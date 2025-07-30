@@ -1,0 +1,15 @@
+## Interface: 30300
+## Title: Notas-guild-addon
+## Notes: Notas personales
+## SavedVariables: NotasDB_Global
+## Addon creado y desarrollado íngramente por
+## ------------------Txarly-------------------
+## agradecimientos a mi betatester Bertita.
+## Addon totalmente en castellano.
+## Sincronizacion con miembros de guild.
+## Hasta 50.000 caracteres por nota.
+## 20 notas de guild.
+## Pestaña de guild, oficiales y 1 para cada pj.
+## Funcion de automensaje para /h configurable.
+Notas-guild-addon.lua
+SavedVariables: NotasDB_Global
