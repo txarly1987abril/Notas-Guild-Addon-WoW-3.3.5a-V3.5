@@ -1038,7 +1038,7 @@ _G.SlashCmdList["NOTAS"] = function(msg)
     if msg == "creditos" or msg == "créditos" then
         print("|cffFFD700Notas Guild Addon|r - Créditos y agradecimientos:")
         print("Desarrollador principal: Txarly-Txardudu")
-        print("Agradecimientos especiales a la comunidad UltimoWoW y a Reckless, Ladebarr, Almeraya y en especial a Rkmerlina, Tialola y a Bertita, Dratiro.")
+        print("Agradecimientos especiales a la comunidad UltimoWoW y a Reckless, Ladebarr, Almeraya y en especial a Rkmerlina, Tialola, Bertita, Dratiro.")
         print("Basado en ideas y feedback de los miembros de la hermandad Almas Perdidas.")
         print("|cff00ff00¡Gracias por usar este addon!|r")
         print("|cff00ff00Contacto para bugs y sugerencias, DISCORD: txarly2_22041")
@@ -1296,32 +1296,49 @@ end)
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:RegisterEvent("ADDON_LOADED")
+eventFrame:RegisterEvent("GUILD_ROSTER_UPDATE")
+eventFrame:RegisterEvent("PLAYER_GUILD_UPDATE")
+
+local function TryRestoreAddonHeader()
+    local guildKey = GetGuildKey()
+    if type(NotasDB_Global) == "table" and type(NotasDB_Global[guildKey]) == "table" and type(NotasDB_Global[guildKey]["ENCABEZADO"]) == "string" and NotasDB_Global[guildKey]["ENCABEZADO"] ~= "" then
+        NotasAddon_VisibleName = NotasDB_Global[guildKey]["ENCABEZADO"]
+        _G["NotasAddon_VisibleName"] = NotasAddon_VisibleName
+    else
+        NotasAddon_VisibleName = nil
+        _G["NotasAddon_VisibleName"] = nil
+    end
+    if UpdateAddonTitle then UpdateAddonTitle() end
+end
+
+local headerRestored = false
 eventFrame:SetScript("OnEvent", function(self, event, addonName)
     if event == "ADDON_LOADED" and addonName == ADDON_NAME then
         print("|cff00ff00[" .. ADDON_NAME .. " v" .. ADDON_VERSION .. "]|r Cargado correctamente.")
         print("|cffFFD700Usa /notas ayuda para ver los comandos disponibles.|r")
+        local guildKey = GetGuildKey()
         if type(NotasDB_Global) ~= "table" then
             NotasDB_Global = {}
             print("|cffff0000[" .. ADDON_NAME .. "]|r Base de datos inicializada.")
         end
-        local guildKey = GetGuildKey()
         if type(NotasDB_Global[guildKey]) ~= "table" then
             NotasDB_Global[guildKey] = {}
         end
         if type(NotasDB_Global[guildKey]["GUILD"]) ~= "table" then
             NotasDB_Global[guildKey]["GUILD"] = {}
         end
-        -- Siempre leer y aplicar el encabezado si existe
-        if type(NotasDB_Global[guildKey]["ENCABEZADO"]) == "string" and NotasDB_Global[guildKey]["ENCABEZADO"] ~= "" then
-            NotasAddon_VisibleName = NotasDB_Global[guildKey]["ENCABEZADO"]
-        else
-            NotasAddon_VisibleName = nil
-        end
-        if UpdateAddonTitle then UpdateAddonTitle() end
         if type(NotasDB_Global[guildKey]["OFICIALES"]) == "table" then
             NotasAddon_OfficerRanks = NotasDB_Global[guildKey]["OFICIALES"]
         end
+        if UpdateAddonTitle then UpdateAddonTitle() end
+        headerRestored = false
     elseif event == "PLAYER_LOGIN" then
+        headerRestored = false
+    elseif (event == "GUILD_ROSTER_UPDATE" or event == "PLAYER_GUILD_UPDATE") and not headerRestored then
+        TryRestoreAddonHeader()
+        headerRestored = true
+    end
+    if event == "PLAYER_LOGIN" then
         if IsInGuild() then
             if IsPlayerOfficer() then
                 print("|cff00ff00[" .. ADDON_NAME .. "]|r Conectado a la guild. Para ver los comandos disponibles usa |cff00ff00/notas ayuda|r.")
